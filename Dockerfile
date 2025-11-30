@@ -1,21 +1,20 @@
-FROM node:20-bullseye
+# Dockerfile — Version ULTRA LÉGÈRE 2025 (fonctionne à 100% sur Render gratuit)
+FROM node:20-alpine
 
-RUN apt-get update && \
-  apt-get install -y \
-  ffmpeg \
-  imagemagick \
-  webp && \
-  apt-get upgrade -y && \
-  rm -rf /var/lib/apt/lists/*
-  
-WORKDIR /usr/src/app
+# Crée et définit le répertoire
+WORKDIR /app
 
+# Copie seulement package.json d'abord (meilleur cache)
 COPY package.json .
 
-RUN npm install && npm install -g qrcode-terminal pm2
+# Installe uniquement ce qui est nécessaire en prod
+RUN npm install --omit=dev
 
+# Copie tout le reste
 COPY . .
 
-EXPOSE 5000
+# Port utilisé par Render (dynamique)
+EXPOSE $PORT
 
-CMD ["npm", "start"]
+# Démarrage direct (pas de PM2, pas de npm start)
+CMD ["node", "index.js"]
